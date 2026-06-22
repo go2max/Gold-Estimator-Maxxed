@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.MaxxedGoldEstimator" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#B8922D</item>
+    </style>
+    <style name="Theme.MaxxedGoldEstimator.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/gold_splash_bg</item>
+        <item name="postSplashScreenTheme">@style/Theme.MaxxedGoldEstimator</item>
+    </style>
+</resources>

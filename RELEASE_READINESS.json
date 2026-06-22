@@ -1,0 +1,45 @@
+{
+  "app": "Maxxed Gold Estimator",
+  "applicationId": "com.maxxed.goldestimator",
+  "versionName": "1.0.0",
+  "versionCode": 2,
+  "targetSdk": 35,
+  "status": "NOT_READY_VERIFICATION_REQUIRED",
+  "implementation": {
+    "guidedCameraXCapture": true,
+    "coverageAndQualityChecks": true,
+    "knownSizeReference": true,
+    "optionalKnownTotalWeight": true,
+    "offlineSegmentationAndClustering": true,
+    "maskAndMaterialCorrection": true,
+    "coherentEstimateRanges": true,
+    "savedBatchesComparisonClipboardCsv": true,
+    "safeGuidance": true
+  },
+  "automatedTests": {
+    "fixturesAuthored": [
+      "poor light rejection",
+      "duplicate orientation rejection across north wraparound",
+      "missing scale does not invent mass",
+      "bright gold-colored look-alike classification",
+      "low-confidence gold-like classification",
+      "foreground mask",
+      "finite ordered known-weight ranges"
+    ],
+    "execution": "BLOCKED: Gradle 8.9 download returned HTTP 403 and no cached Gradle distribution or Android SDK was available in this workspace."
+  },
+  "artifacts": {
+    "signedApk": null,
+    "signedAab": null,
+    "signerSha256": null
+  },
+  "releaseSigning": "Release configuration requires MAXXED_RELEASE_PROPERTIES and intentionally has no debug-key fallback.",
+  "physicalValidation": "NOT_RUN in this workspace; the target Samsung device and fixture set were unavailable.",
+  "blockingIssues": [
+    "Run unit tests, release lint, assembleRelease, and bundleRelease in an Android build environment.",
+    "Supply the intended production upload key and verify signer identity.",
+    "Complete the documented physical fixture matrix on the target Samsung device.",
+    "Add the production support contact to the privacy policy before store submission."
+  ],
+  "readyStatement": "NOT READY. The requested application workflow is implemented, but builds, signed artifacts, automated execution, and physical fixture validation could not be completed in this workspace."
+}
