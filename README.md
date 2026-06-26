@@ -2,6 +2,10 @@
 
 Maxxed Gold Estimator is an offline Android tool for producing conservative visual material estimates from a guided six-angle photo set. It does not identify chemical composition and is not a substitute for a laboratory assay.
 
+## Readiness
+
+Current release status is tracked in [`READINESS.md`](READINESS.md). Do not treat this app as production-ready until automated checks, signed artifacts, physical sample acceptance, and conservative store/legal copy are verified.
+
 ## Implemented workflow
 
 1. Capture top, front, right, back, left, and low-oblique views with CameraX.
