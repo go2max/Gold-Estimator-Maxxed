@@ -1,12 +1,18 @@
 # Maxxed Gold Estimator
 
-Maxxed Gold Estimator is an offline Android tool for producing conservative visual material estimates from a guided six-angle photo set. It does not identify chemical composition and is not a substitute for a laboratory assay.
+Maxxed Gold Estimator is an offline Android tool for producing conservative visual material estimates from a guided six-angle photo set. It does not identify chemical composition and is not a substitute for a laboratory assay, appraisal, purity test, or legal valuation.
+
+## Website Summary
+
+Use this copy when referencing the app externally:
+
+> Maxxed Gold Estimator is an offline Android visual-estimation tool for photographed mineral or material batches. It guides six-angle capture, known-size calibration, on-device segmentation, material-cluster review, visible-share estimates, confidence ranges, local saved batches, comparison, and CSV export while clearly warning that results are visual estimates only.
 
 ## Readiness
 
 Current release status is tracked in [`READINESS.md`](READINESS.md). Do not treat this app as production-ready until automated checks, signed artifacts, physical sample acceptance, and conservative store/legal copy are verified.
 
-## Implemented workflow
+## Implemented Workflow
 
 1. Capture top, front, right, back, left, and low-oblique views with CameraX.
 2. Reject poor exposure, low contrast, blur, glare, missing subject presence, near-duplicate images, and insufficient device-angle separation.
@@ -17,6 +23,14 @@ Current release status is tracked in [`READINESS.md`](READINESS.md). Do not trea
 7. Save batches locally, compare two batches, copy a text summary, or explicitly export CSV through Android's document picker.
 
 Results always place Gold first, followed by Quartz, Pyrite / mica, Black sand, Dirt / clay, and Unknown.
+
+## Privacy And Safety Posture
+
+- Analysis is deterministic and on-device.
+- The app has no network permission, analytics SDK, advertising SDK, account, or cloud sync.
+- Captures are held in app-private storage and excluded from backup.
+- CSV leaves app-private storage only after the user chooses a destination.
+- Results are visual estimates only and must not be presented as assay, purity, chemical-composition, legal-value, or guaranteed identification results.
 
 ## Build
 
@@ -44,9 +58,15 @@ MAXXED_RELEASE_PROPERTIES=/absolute/path/to/release.properties \
 
 The release build intentionally has no debug-signing fallback.
 
-## Privacy
+## Release Gate
 
-Analysis is deterministic and on-device. The app has no network permission, analytics SDK, advertising SDK, account, or cloud sync. Captures are held in app-private storage and excluded from backup. CSV leaves app-private storage only after the user chooses a destination.
+Before Play submission:
+
+1. Run debug and signed-release checks on the release candidate.
+2. Build signed APK/AAB artifacts and record hashes plus signer evidence.
+3. Run physical sample acceptance with controlled sample photos, known-size references, lighting variation, glare/wetness cases, and look-alike materials.
+4. Confirm in-app and store copy preserves the visual-estimate-only limitation.
+5. Verify support/privacy URLs, screenshots, Play Console data-safety declaration, and release notes.
 
 ## Interpretation
 
