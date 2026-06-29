@@ -7,9 +7,10 @@
 - reference length in millimeters and calibrated pixels per millimeter
 - optional measured total weight in grams
 - mask sensitivity
+- field context: sample type, site or cleanup label, optional gold price per gram, and expected recovery percentage
 - visible clusters with mean RGB, share, suggested material, and visual-label confidence
 - user material assignment for every cluster
-- ordered material estimates with visible-share, density, volume, weight, and confidence ranges
+- ordered material estimates with visible-share, density, volume, weight, recoverable-gold, troy-ounce/pennyweight export equivalents, value, and confidence ranges
 - overall confidence and interpretation warnings
 
 The saved record intentionally does not call any visual label a chemical identification. CSV exports use explicit unit-bearing columns and the same estimate disclaimer.
