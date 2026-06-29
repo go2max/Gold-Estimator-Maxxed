@@ -16,7 +16,7 @@
     "savedBatchesComparisonClipboardCsv": true,
     "fieldSampleContext": true,
     "recoverableValueRanges": true,
-    "recoveryPresets": false,
+    "recoveryPresets": true,
     "troyOunceAndPennyweightEquivalents": true,
     "fieldInputNormalization": true,
     "lastFieldSetupPrefill": true,
@@ -48,11 +48,10 @@
   "releaseSigning": "Release configuration requires MAXXED_RELEASE_PROPERTIES and intentionally has no debug-key fallback.",
   "physicalValidation": "NOT_RUN in this workspace; the target Samsung device and fixture set were unavailable.",
   "blockingIssues": [
-    "Push the matching Compose UI field setup/result polish before marking the PR ready for review.",
     "Run unit tests, release lint, assembleRelease, and bundleRelease in an Android build environment.",
     "Supply the intended production upload key and verify signer identity.",
     "Complete the documented physical fixture matrix on the target Samsung device.",
     "Capture final screenshots after the field-value UI is stable."
   ],
-  "readyStatement": "NOT READY. The field-value domain workflow is implemented, but UI exposure, builds, signed artifacts, automated execution, and physical fixture validation still need completion."
+  "readyStatement": "NOT READY. The field-value workflow and UI are implemented, but builds, signed artifacts, automated execution, physical fixture validation, and final screenshots still need completion."
 }
