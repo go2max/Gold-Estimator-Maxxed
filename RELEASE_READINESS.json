@@ -40,7 +40,10 @@
   "artifacts": {
     "signedApk": null,
     "signedAab": null,
-    "signerSha256": null
+    "signerSha256": null,
+    "releaseNotesDraft": "release/RELEASE_NOTES.md",
+    "storeAssetsChecklist": "release/STORE_ASSETS.md",
+    "fieldTestLogTemplate": "release/FIELD_TEST_LOG.md"
   },
   "releaseSigning": "Release configuration requires MAXXED_RELEASE_PROPERTIES and intentionally has no debug-key fallback.",
   "physicalValidation": "NOT_RUN in this workspace; the target Samsung device and fixture set were unavailable.",
@@ -49,7 +52,7 @@
     "Run unit tests, release lint, assembleRelease, and bundleRelease in an Android build environment.",
     "Supply the intended production upload key and verify signer identity.",
     "Complete the documented physical fixture matrix on the target Samsung device.",
-    "Add the production support contact to the privacy policy before store submission."
+    "Capture final screenshots after the field-value UI is stable."
   ],
   "readyStatement": "NOT READY. The field-value domain workflow is implemented, but UI exposure, builds, signed artifacts, automated execution, and physical fixture validation still need completion."
 }
