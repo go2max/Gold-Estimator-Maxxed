@@ -99,6 +99,8 @@ object VisualAnalysis {
         knownWeightG: Double?,
         pixelsPerMm: Double?,
         subjectPixelArea: Double?,
+        goldPricePerGram: Double? = null,
+        recoverableFraction: Double = 0.85,
         depthMmRange: ClosedFloatingPointRange<Double> = 3.0..12.0
     ): List<MaterialEstimate> {
         val grouped = Material.entries.associateWith { material ->
@@ -127,7 +129,27 @@ object VisualAnalysis {
                 weightLow = volumeLow?.times(material.densityLow)
                 weightHigh = volumeHigh?.times(material.densityHigh)
             }
-            MaterialEstimate(material, lowShare, highShare, material.densityLow, material.densityHigh, volumeLow, volumeHigh, weightLow, weightHigh, confidence)
+            val recovery = recoverableFraction.coerceIn(0.0, 1.0)
+            val recoverableLow = if (material == Material.GOLD) weightLow?.times(recovery) else null
+            val recoverableHigh = if (material == Material.GOLD) weightHigh?.times(recovery) else null
+            val valueLow = goldPricePerGram?.takeIf { it > 0 }?.let { price -> recoverableLow?.times(price) }
+            val valueHigh = goldPricePerGram?.takeIf { it > 0 }?.let { price -> recoverableHigh?.times(price) }
+            MaterialEstimate(
+                material,
+                lowShare,
+                highShare,
+                material.densityLow,
+                material.densityHigh,
+                volumeLow,
+                volumeHigh,
+                weightLow,
+                weightHigh,
+                confidence,
+                recoverableLow,
+                recoverableHigh,
+                valueLow,
+                valueHigh
+            )
         }
     }
 

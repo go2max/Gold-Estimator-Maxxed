@@ -159,14 +159,14 @@ private fun GoldApp(vm: GoldViewModel = viewModel()) {
 @Composable
 private fun HomeScreen(state: GoldUiState, vm: GoldViewModel) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Offline visual material estimates", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Capture a dry sample from six distinct angles, measure a known-size reference, review the mask and material labels, then save or export the result.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Field gold value estimator", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text("Built for panning, sluice cleanup, paydirt, tailings, and digging samples. Capture a dry sample, measure a reference, review the labels, then estimate visible material and recoverable gold value from your own price input.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Notice("Visual estimates only. Gold-colored pixels can be pyrite, mica, staining, or other material. This app does not perform a chemical assay.")
         Button(onClick = vm::newBatch, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.CameraAlt, null); Spacer(Modifier.width(8.dp)); Text("Start new batch") }
         OutlinedButton(onClick = { vm.navigate(Screen.HISTORY) }, modifier = Modifier.fillMaxWidth()) { Text("Saved batches (${state.saved.size})") }
         OutlinedButton(onClick = { vm.navigate(Screen.SAFETY) }, modifier = Modifier.fillMaxWidth()) { Text("Safe recovery guidance") }
         SectionCard("Before capture") {
-            Text("Use diffuse light, a stable phone, a dry and reasonably clean sample, and a flat reference object whose exact length you know. Keep the reference in the same plane as the sample.")
+            Text("Pan or classify the material first, let it drain, spread it thin on a plain background, and keep a known-size reference in the same plane as the sample. Enter your current gold price per gram when you want a rough field value.")
         }
     }
 }
@@ -265,11 +265,17 @@ private fun rememberOrientationPose(): CapturePose? {
 
 @Composable
 private fun ReferenceScreen(state: GoldUiState, vm: GoldViewModel) {
+    val lastFieldContext = state.lastFieldContext
     val bitmap = remember(state.captures.firstOrNull()) { state.captures.firstOrNull()?.let { BitmapFactory.decodeFile(it.absolutePath) } }
     var points by remember { mutableStateOf<List<Offset>>(emptyList()) }
     var boxWidth by remember { mutableStateOf(1) }
     var referenceText by remember { mutableStateOf("") }
     var weightText by remember { mutableStateOf("") }
+    var siteText by remember(lastFieldContext) { mutableStateOf(lastFieldContext.siteLabel) }
+    var sampleType by remember(lastFieldContext) { mutableStateOf(lastFieldContext.sampleType) }
+    var sampleMenuExpanded by remember { mutableStateOf(false) }
+    var priceText by remember(lastFieldContext) { mutableStateOf(fieldNumber(lastFieldContext.goldPricePerGram)) }
+    var recoveryText by remember(lastFieldContext) { mutableStateOf(fieldNumber(lastFieldContext.recoveryPercent)) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Tap both ends of the known-length reference. Tap again to restart.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (bitmap != null) Box(Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height).background(Color.Black).onSizeChanged { boxWidth = it.width }.pointerInput(Unit) {
@@ -283,15 +289,45 @@ private fun ReferenceScreen(state: GoldUiState, vm: GoldViewModel) {
         }
         OutlinedTextField(referenceText, { referenceText = numeric(it) }, label = { Text("Known reference length (mm)") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(weightText, { weightText = numeric(it) }, label = { Text("Optional measured total weight (g)") }, supportingText = { Text("Leave blank to estimate a broad volume and weight range.") }, modifier = Modifier.fillMaxWidth())
+        SectionCard("Field value setup") {
+            Box {
+                OutlinedButton(onClick = { sampleMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) { Text(sampleType.label) }
+                DropdownMenu(sampleMenuExpanded, { sampleMenuExpanded = false }) {
+                    SampleType.entries.forEach { type ->
+                        DropdownMenuItem({ Text(type.label) }, onClick = { sampleType = type; sampleMenuExpanded = false })
+                    }
+                }
+            }
+            OutlinedTextField(siteText, { siteText = it.take(80) }, label = { Text("Site, claim, bucket, or cleanup label") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(priceText, { priceText = numeric(it) }, label = { Text("Optional gold price per gram") }, supportingText = { Text("Enter your own current spot or sell price. The app stays offline.") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(recoveryText, { recoveryText = numeric(it) }, label = { Text("Expected recovery (%)") }, supportingText = { Text("Use a conservative field recovery rate for panning or cleanup losses.") }, modifier = Modifier.fillMaxWidth())
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                RecoveryPreset("70%", "Conservative", Modifier.weight(1f)) { recoveryText = "70" }
+                RecoveryPreset("85%", "Normal", Modifier.weight(1f)) { recoveryText = "85" }
+                RecoveryPreset("95%", "Careful", Modifier.weight(1f)) { recoveryText = "95" }
+            }
+        }
         val measuredPixels = if (points.size == 2 && bitmap != null) hypot((points[1].x - points[0].x).toDouble(), (points[1].y - points[0].y).toDouble()) * bitmap.width / boxWidth else null
         Text(if (measuredPixels == null) "Reference line not set" else "Measured line: ${measuredPixels.oneDecimal()} image pixels")
-        Button(onClick = { vm.setReference(referenceText.toDoubleOrNull(), measuredPixels, weightText.toDoubleOrNull()) }, modifier = Modifier.fillMaxWidth()) { Text("Analyze on device") }
+        Button(onClick = {
+            vm.setReference(
+                referenceText.toDoubleOrNull(),
+                measuredPixels,
+                weightText.toDoubleOrNull(),
+                FieldContext(
+                    sampleType = sampleType,
+                    siteLabel = siteText.trim(),
+                    goldPricePerGram = priceText.toDoubleOrNull()?.takeIf { it > 0 },
+                    recoveryPercent = recoveryText.toDoubleOrNull()?.coerceIn(0.0, 100.0) ?: 85.0
+                )
+            )
+        }, modifier = Modifier.fillMaxWidth()) { Text("Analyze field sample") }
     }
 }
 
 @Composable
 private fun CorrectionScreen(state: GoldUiState, vm: GoldViewModel) {
-    var name by remember { mutableStateOf("") }
+    var name by remember(state.fieldContext) { mutableStateOf(GoldViewModel.suggestedBatchName(state.fieldContext, state.saved.size + 1)) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Notice("Review every cluster. A gold-colored cluster is not proof of gold. Assign Unknown whenever appearance is ambiguous.")
         Text("Mask sensitivity", style = MaterialTheme.typography.titleMedium)
@@ -299,7 +335,7 @@ private fun CorrectionScreen(state: GoldUiState, vm: GoldViewModel) {
         Text("Adjust until the sample is included while the surrounding background is excluded. Current foreground: $foregroundPercent%")
         Slider(state.maskSensitivity.toFloat(), { vm.updateMask(it.toDouble()) }, valueRange = 0f..1f)
         state.clusters.forEach { ClusterEditor(it, state.assignments[it.id] ?: it.suggested) { material -> vm.assign(it.id, material) } }
-        OutlinedTextField(name, { name = it.take(60) }, label = { Text("Batch name") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(name, { name = it.take(60) }, label = { Text("Batch name") }, supportingText = { Text("Use the claim, pan, bucket, cleanup, or test hole name you will recognize later.") }, modifier = Modifier.fillMaxWidth())
         Button(onClick = { vm.calculate(name) }, modifier = Modifier.fillMaxWidth()) { Text("Calculate visual estimate") }
     }
 }
@@ -321,7 +357,9 @@ private fun ResultsScreen(batch: BatchResult?, onSave: () -> Unit, onCopy: (Batc
     if (batch == null) return
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(batch.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text("${batch.fieldContext.sampleType.label}: ${batch.fieldContext.displayLabel}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Notice("Visual estimate only, not a chemical assay. Confidence ${(batch.overallConfidence * 100).toInt()}%.")
+        batch.estimates.firstOrNull { it.material == Material.GOLD }?.let { GoldHeroCard(it, batch.fieldContext) }
         batch.warnings.forEach { Text("- $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
         Text("Material estimates", style = MaterialTheme.typography.titleLarge)
         batch.estimates.forEach { EstimateRow(it) }
@@ -334,6 +372,17 @@ private fun ResultsScreen(batch: BatchResult?, onSave: () -> Unit, onCopy: (Batc
 }
 
 @Composable
+private fun GoldHeroCard(estimate: MaterialEstimate, fieldContext: FieldContext) {
+    SectionCard("Gold field value") {
+        Text("Visual gold: ${GoldViewModel.range(estimate.weightLowG, estimate.weightHighG, "g")}", fontWeight = FontWeight.Bold)
+        Text("Recoverable: ${GoldViewModel.range(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG, "g")} / ${GoldViewModel.troyOunceRange(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG)} / ${GoldViewModel.pennyweightRange(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG)}")
+        Text("Estimated value: ${GoldViewModel.moneyRange(estimate.valueLow, estimate.valueHigh)}")
+        val price = fieldContext.goldPricePerGram?.let { "\$${it.oneDecimal()}/g" } ?: "No price entered"
+        Text("$price at ${fieldContext.recoveryPercent.oneDecimal()}% recovery", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
 private fun EstimateRow(estimate: MaterialEstimate) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -342,6 +391,11 @@ private fun EstimateRow(estimate: MaterialEstimate) {
             Text("Density range: ${estimate.densityLow.oneDecimal()}-${estimate.densityHigh.oneDecimal()} g/cm3")
             Text("Volume: ${GoldViewModel.range(estimate.volumeLowCm3, estimate.volumeHighCm3, "cm3")}")
             Text("Weight: ${GoldViewModel.range(estimate.weightLowG, estimate.weightHighG, "g")}")
+            if (estimate.material == Material.GOLD) {
+                Text("Recoverable gold: ${GoldViewModel.range(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG, "g")}")
+                Text("Troy oz: ${GoldViewModel.troyOunceRange(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG)}; dwt: ${GoldViewModel.pennyweightRange(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG)}")
+                Text("Estimated value: ${GoldViewModel.moneyRange(estimate.valueLow, estimate.valueHigh)}")
+            }
             Text("Confidence: ${(estimate.confidence * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
         }
     }
@@ -362,13 +416,27 @@ private fun HistoryScreen(state: GoldUiState, vm: GoldViewModel, onExport: (List
                         Checkbox(batch.id in state.compareIds, { vm.toggleCompare(batch.id) })
                         Column(Modifier.weight(1f).clickable { vm.openBatch(batch) }) {
                             Text(batch.name, fontWeight = FontWeight.Bold)
+                            Text(batch.fieldContext.displayLabel, style = MaterialTheme.typography.bodySmall)
                             Text(DateFormat.getDateTimeInstance().format(Date(batch.createdAt)), style = MaterialTheme.typography.bodySmall)
+                            batch.estimates.firstOrNull { it.material == Material.GOLD }?.let { gold ->
+                                Text("Gold ${GoldViewModel.range(gold.recoverableWeightLowG, gold.recoverableWeightHighG, "g")} recoverable; ${GoldViewModel.moneyRange(gold.valueLow, gold.valueHigh)}", style = MaterialTheme.typography.bodySmall)
+                            }
                             Text("Confidence ${(batch.overallConfidence * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
                         }
                         IconButton(onClick = { vm.delete(batch.id) }) { Icon(Icons.Default.Delete, "Delete") }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RecoveryPreset(value: String, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, modifier = modifier) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(value, fontWeight = FontWeight.Bold)
+            Text(label, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -381,7 +449,12 @@ private fun CompareScreen(batches: List<BatchResult>) {
             SectionCard(material.label) {
                 batches.forEach { batch ->
                     val estimate = batch.estimates.first { it.material == material }
-                    Text("${batch.name}: ${(estimate.visibleShareLow * 100).oneDecimal()}-${(estimate.visibleShareHigh * 100).oneDecimal()}%; ${GoldViewModel.range(estimate.weightLowG, estimate.weightHighG, "g")}")
+                    val value = if (material == Material.GOLD) {
+                        "; recoverable ${GoldViewModel.range(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG, "g")} / ${GoldViewModel.troyOunceRange(estimate.recoverableWeightLowG, estimate.recoverableWeightHighG)}; value ${GoldViewModel.moneyRange(estimate.valueLow, estimate.valueHigh)}"
+                    } else {
+                        ""
+                    }
+                    Text("${batch.name}: ${(estimate.visibleShareLow * 100).oneDecimal()}-${(estimate.visibleShareHigh * 100).oneDecimal()}%; ${GoldViewModel.range(estimate.weightLowG, estimate.weightHighG, "g")}$value")
                 }
             }
         }
@@ -393,7 +466,7 @@ private fun SafetyScreen() {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Notice("Treat every result as a visual estimate. Use a qualified laboratory assay when identification or value matters.")
         SectionCard("Safer field workflow") { Text("Keep the sample dry, use gloves and eye protection when handling dusty material, work with ventilation, and wash hands afterward. Avoid breathing fine dust.") }
-        SectionCard("Recovery guidance") { Text("Use mechanical classification and water-based gravity methods such as careful panning or commercially designed gravity equipment. Follow equipment instructions and local water, land-access, and disposal rules.") }
+        SectionCard("Recovery guidance") { Text("Use mechanical classification and water-based gravity methods such as careful panning, sluice cleanup, or commercially designed gravity equipment. Track the bucket, pan, cleanup, or sample source so saved estimates compare like with like. Follow equipment instructions and local water, land-access, and disposal rules.") }
         SectionCard("Specimens") { Text("A natural specimen may be worth more intact than its recoverable metal. Photograph and document it before altering it, and consult a reputable mineral dealer or qualified assayer for consequential decisions.") }
         SectionCard("Look-alikes") { Text("Pyrite, mica, iron staining, brass-colored minerals, wet highlights, and glare can all appear gold-colored in photographs. Re-capture under diffuse light and assign ambiguous clusters to Unknown.") }
     }
@@ -407,5 +480,6 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) { Card(c
 
 private fun titleFor(screen: Screen) = when (screen) { Screen.HOME -> "Maxxed Gold Estimator"; Screen.CAMERA -> "Guided capture"; Screen.REFERENCE -> "Scale reference"; Screen.CORRECT -> "Review analysis"; Screen.RESULTS -> "Visual estimate"; Screen.HISTORY -> "Saved batches"; Screen.COMPARE -> "Compare batches"; Screen.SAFETY -> "Safe guidance" }
 private fun numeric(value: String) = value.filter { it.isDigit() || it == '.' }.take(12)
+private fun fieldNumber(value: Double?) = value?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.oneDecimal() } ?: ""
 private fun safeName(value: String) = value.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifBlank { "gold-batch" }
 private fun copy(context: Context, text: String) { (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("Gold visual estimate", text)) }

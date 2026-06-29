@@ -12,6 +12,30 @@ enum class Material(val label: String, val densityLow: Double, val densityHigh: 
     UNKNOWN("Unknown", 1.50, 6.00)
 }
 
+enum class SampleType(val label: String) {
+    PAN_CONCENTRATE("Pan concentrate"),
+    SLUICE_CONCENTRATE("Sluice concentrate"),
+    PAYDIRT("Paydirt sample"),
+    HARD_ROCK("Hard-rock specimen"),
+    TAILINGS("Tailings / cleanup"),
+    UNKNOWN("Field sample")
+}
+
+data class FieldContext(
+    val sampleType: SampleType = SampleType.PAN_CONCENTRATE,
+    val siteLabel: String = "",
+    val goldPricePerGram: Double? = null,
+    val recoveryPercent: Double = 85.0
+) {
+    val recoverableFraction: Double get() = (recoveryPercent / 100.0).coerceIn(0.0, 1.0)
+    val displayLabel: String get() = siteLabel.ifBlank { sampleType.label }
+    fun normalized(): FieldContext = copy(
+        siteLabel = siteLabel.trim(),
+        goldPricePerGram = goldPricePerGram?.takeIf { it > 0 },
+        recoveryPercent = recoveryPercent.coerceIn(1.0, 100.0)
+    )
+}
+
 data class CaptureQuality(
     val meanLight: Double,
     val contrast: Double,
@@ -56,7 +80,11 @@ data class MaterialEstimate(
     val volumeHighCm3: Double?,
     val weightLowG: Double?,
     val weightHighG: Double?,
-    val confidence: Double
+    val confidence: Double,
+    val recoverableWeightLowG: Double? = null,
+    val recoverableWeightHighG: Double? = null,
+    val valueLow: Double? = null,
+    val valueHigh: Double? = null
 )
 
 data class BatchResult(
@@ -72,7 +100,8 @@ data class BatchResult(
     val assignments: Map<Int, Material>,
     val estimates: List<MaterialEstimate>,
     val overallConfidence: Double,
-    val warnings: List<String>
+    val warnings: List<String>,
+    val fieldContext: FieldContext = FieldContext()
 )
 
 fun Double.percentText(): String = "${(this * 100).roundToInt()}%"

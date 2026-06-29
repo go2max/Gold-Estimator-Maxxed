@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Effective date: June 21, 2026
+Effective date: June 28, 2026
 
 Maxxed Gold Estimator performs photo processing and visual estimation on the user's Android device. It does not send photographs, estimates, identifiers, or usage data to Maxxed or to an analytics, advertising, or cloud service.
 
@@ -10,7 +10,7 @@ Camera access is used only when the user starts guided sample capture. Captures 
 
 ## Saved data and export
 
-Saved batch names, settings, cluster assignments, and visual estimates are stored locally in app-private preferences. The user may explicitly export CSV through Android's system document picker or copy a summary to the system clipboard. Files or clipboard content are then controlled by the apps and locations the user selects.
+Saved batch names, field setup values, cluster assignments, and visual estimates are stored locally in app-private preferences. Field setup values can include user-entered sample labels, sample type, recovery percentage, and optional gold price per gram. The user may explicitly export CSV through Android's system document picker or copy a summary to the system clipboard. Files or clipboard content are then controlled by the apps and locations the user selects.
 
 ## Deletion
 
@@ -22,4 +22,4 @@ The app does not request network access and contains no account, analytics, adve
 
 ## Contact
 
-Add the production support email and mailing address before public store submission.
+Privacy questions may be sent to privacy@techmaxxed.com. Product support may be sent to support@techmaxxed.com.
