@@ -4,10 +4,11 @@
 - Data shared with third parties by the developer: none.
 - Processing: on-device only.
 - Required sensitive permission: Camera, used for user-initiated guided capture.
+- App-private local data: saved batch names, field setup values, material assignments, and visual estimates remain on device unless the user exports or copies them.
 - Optional user actions: copy a result to the Android clipboard or export CSV to a user-selected destination.
 - Accounts: none.
 - Ads and analytics: none.
 - Network access: none requested.
 - App-private deletion: delete saved batches, clear app storage, or uninstall.
 
-Recheck this declaration against the final signed artifact and Play Console wording before submission.
+Recheck this declaration against the final signed artifact, Play Console wording, and the final privacy policy before submission.
