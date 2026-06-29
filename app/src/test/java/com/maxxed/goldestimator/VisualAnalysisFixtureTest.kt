@@ -51,6 +51,46 @@ class VisualAnalysisFixtureTest {
     }
 
     @Test
+    fun fieldValueUsesRecoverableGoldOnly() {
+        val clusters = listOf(
+            VisualCluster(0, 0.25, 160, 120, 35, Material.GOLD, 0.58),
+            VisualCluster(1, 0.75, 210, 210, 204, Material.QUARTZ, 0.74)
+        )
+        val estimates = VisualAnalysis.estimates(
+            clusters,
+            clusters.associate { it.id to it.suggested },
+            0.85,
+            knownWeightG = 80.0,
+            pixelsPerMm = null,
+            subjectPixelArea = null,
+            goldPricePerGram = 70.0,
+            recoverableFraction = 0.80
+        )
+        val gold = estimates.first { it.material == Material.GOLD }
+        val quartz = estimates.first { it.material == Material.QUARTZ }
+        assertTrue((gold.recoverableWeightLowG ?: 0.0) > 0.0)
+        assertTrue((gold.valueHigh ?: 0.0) > (gold.valueLow ?: 0.0))
+        assertNull(quartz.valueLow)
+        assertNull(quartz.recoverableWeightLowG)
+    }
+
+    @Test
+    fun fieldHelpersProduceUsefulLabels() {
+        val context = FieldContext(SampleType.SLUICE_CONCENTRATE, "Creek cleanup", 68.0, 85.0)
+        assertTrue(GoldViewModel.suggestedBatchName(context, 1).startsWith("Creek cleanup - "))
+        assertEquals("1.0-2.0 oz t", GoldViewModel.troyOunceRange(31.1034768, 62.2069536))
+        assertEquals("10.0-20.0 dwt", GoldViewModel.pennyweightRange(15.5517384, 31.1034768))
+    }
+
+    @Test
+    fun fieldContextNormalizesFieldInputs() {
+        val context = FieldContext(SampleType.PAN_CONCENTRATE, "  Test pan  ", -1.0, 0.0).normalized()
+        assertEquals("Test pan", context.siteLabel)
+        assertNull(context.goldPricePerGram)
+        assertEquals(1.0, context.recoveryPercent, 0.0)
+    }
+
+    @Test
     fun subjectMaskSeparatesCenterObjectFromPlainBackground() {
         val samples = grid { x, y ->
             if (x in 3..6 && y in 3..6) PixelSample(130, 85, 25, x, y) else PixelSample(235, 235, 235, x, y)
