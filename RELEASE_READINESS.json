@@ -14,6 +14,12 @@
     "maskAndMaterialCorrection": true,
     "coherentEstimateRanges": true,
     "savedBatchesComparisonClipboardCsv": true,
+    "fieldSampleContext": true,
+    "recoverableValueRanges": true,
+    "recoveryPresets": false,
+    "troyOunceAndPennyweightEquivalents": true,
+    "fieldInputNormalization": true,
+    "lastFieldSetupPrefill": true,
     "safeGuidance": true
   },
   "automatedTests": {
@@ -24,9 +30,12 @@
       "bright gold-colored look-alike classification",
       "low-confidence gold-like classification",
       "foreground mask",
-      "finite ordered known-weight ranges"
+      "finite ordered known-weight ranges",
+      "recoverable field value uses gold-only estimate, user price, and recovery rate",
+      "field helper labels and gram-to-troy-ounce/pennyweight conversions",
+      "field input normalization for labels, price, and recovery bounds"
     ],
-    "execution": "BLOCKED: Gradle 8.9 download returned HTTP 403 and no cached Gradle distribution or Android SDK was available in this workspace."
+    "execution": "BLOCKED: Gradle 8.9 was not cached and this workspace could not reach services.gradle.org."
   },
   "artifacts": {
     "signedApk": null,
@@ -36,10 +45,11 @@
   "releaseSigning": "Release configuration requires MAXXED_RELEASE_PROPERTIES and intentionally has no debug-key fallback.",
   "physicalValidation": "NOT_RUN in this workspace; the target Samsung device and fixture set were unavailable.",
   "blockingIssues": [
+    "Push the matching Compose UI field setup/result polish before marking the PR ready for review.",
     "Run unit tests, release lint, assembleRelease, and bundleRelease in an Android build environment.",
     "Supply the intended production upload key and verify signer identity.",
     "Complete the documented physical fixture matrix on the target Samsung device.",
     "Add the production support contact to the privacy policy before store submission."
   ],
-  "readyStatement": "NOT READY. The requested application workflow is implemented, but builds, signed artifacts, automated execution, and physical fixture validation could not be completed in this workspace."
+  "readyStatement": "NOT READY. The field-value domain workflow is implemented, but UI exposure, builds, signed artifacts, automated execution, and physical fixture validation still need completion."
 }
